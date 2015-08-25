@@ -3,8 +3,10 @@ package com.example.home.fourxxiweather.utils;
 import android.content.Context;
 import android.os.AsyncTask;
 
+import com.example.home.fourxxiweather.Cache;
 import com.example.home.fourxxiweather.activities.MainActivity;
 import com.example.home.fourxxiweather.models.ApiWeather;
+import com.example.home.fourxxiweather.models.City;
 import com.example.home.fourxxiweather.models.CityInt;
 
 public class AsyncTaskAccumulator {
@@ -12,12 +14,14 @@ public class AsyncTaskAccumulator {
     public static class GetWeatherTask extends AsyncTask<Void, Void, Boolean> {
 
         private final Context context;
+        private City city;
         private CityInt cityInt;
         private String dCount;
         private ApiWeather weather;
 
-        public GetWeatherTask(Context context, CityInt cityInt, String dCount) {
+        public GetWeatherTask(Context context, City city, CityInt cityInt, String dCount) {
             this.context = context;
+            this.city = city;
             this.cityInt = cityInt;
             this.dCount = dCount;
         }
@@ -30,6 +34,12 @@ public class AsyncTaskAccumulator {
             } catch (RuntimeException error) {
                 return false;
             }
+            if (weather != null && weather.getList() != null && weather.getCity() != null) {
+                Cache.WeatherCacheDictionary.put(city.getName() + city.getCountry(), weather);
+                DBHelper dbHelper = new DBHelper(context);
+                dbHelper.fillWeatherTable(weather, city);
+            }
+
             return (weather != null && weather.getList() != null && weather.getCity() != null);
         }
 

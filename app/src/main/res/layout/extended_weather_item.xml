@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical" android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceSmall"
+        android:text="25.08"
+        android:id="@+id/tvDateItem"
+        android:layout_toRightOf="@+id/tvDayOfWeekItem"
+        android:layout_marginLeft="5dp"
+        android:layout_alignBottom="@+id/tvDayOfWeekItem" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceSmall"
+        android:text="ПН"
+        android:id="@+id/tvDayOfWeekItem"
+        android:layout_margin="5dp"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentLeft="true" />
+
+    <ImageView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/ivExtendedWeatherItem"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentEnd="true"
+        android:src="@android:drawable/ic_menu_camera"
+        android:layout_margin="5dp" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceSmall"
+        android:text="+20 C"
+        android:id="@+id/tvTempItem"
+        android:layout_alignParentTop="false"
+        android:textStyle="bold"
+        android:layout_toLeftOf="@+id/ivExtendedWeatherItem"
+        android:layout_alignTop="@+id/ivExtendedWeatherItem" />
+
+</RelativeLayout>

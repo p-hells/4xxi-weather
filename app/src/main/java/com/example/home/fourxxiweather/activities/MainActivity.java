@@ -16,8 +16,10 @@ import android.widget.PopupMenu;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.example.home.fourxxiweather.Cache;
 import com.example.home.fourxxiweather.R;
 import com.example.home.fourxxiweather.adapters.CityListAdapter;
+import com.example.home.fourxxiweather.adapters.ExtendedWeatherListAdapter;
 import com.example.home.fourxxiweather.consts.Consts;
 import com.example.home.fourxxiweather.consts.RequestCodes;
 import com.example.home.fourxxiweather.models.ApiDay;
@@ -26,6 +28,7 @@ import com.example.home.fourxxiweather.models.ApiWeatherDescriptor;
 import com.example.home.fourxxiweather.models.City;
 import com.example.home.fourxxiweather.models.CityInt;
 import com.example.home.fourxxiweather.models.CityListItem;
+import com.example.home.fourxxiweather.models.ExtendedWeatherItem;
 import com.example.home.fourxxiweather.utils.AsyncTaskAccumulator;
 import com.example.home.fourxxiweather.utils.CommonMethods;
 import com.example.home.fourxxiweather.utils.DBHelper;
@@ -49,10 +52,12 @@ public class MainActivity extends AppCompatActivity {
     DBHelper dbHelper;
     boolean firstStartCheck;
     private AsyncTaskAccumulator.GetWeatherTask getWeatherTask;
+    City choosenCity;
 
 
     //UI references
     ListView lvCities;
+    ListView lvExtendedWeather;
     TextView tvCity;
     TextView tvTemperature;
     TextView tvDate;
@@ -62,7 +67,10 @@ public class MainActivity extends AppCompatActivity {
     TextView tvPressure;
     TextView tvCloudy;
     TextView tvHumidity;
+    Button btnThree;
+    Button btnWeek;
     Button btnAddaCity;
+
     PopupMenu popupMenu;
 
 
@@ -78,6 +86,7 @@ public class MainActivity extends AppCompatActivity {
         dbHelper = new DBHelper(this);
         firstStartCheck = true;
         lvCities = (ListView) findViewById(R.id.lvCities);
+        lvExtendedWeather = (ListView) findViewById(R.id.lvExtendedWeather);
         tvCity = (TextView) findViewById(R.id.tvCity);
         tvTemperature = (TextView) findViewById(R.id.tvTemperature);
         tvDate = (TextView) findViewById(R.id.tvDate);
@@ -88,6 +97,9 @@ public class MainActivity extends AppCompatActivity {
         tvPressure = (TextView) findViewById(R.id.tvPressure);
         tvCloudy = (TextView) findViewById(R.id.tvCloudy);
         btnAddaCity = (Button) findViewById(R.id.btnAddCity);
+        btnThree = (Button) findViewById(R.id.btnThree);
+        btnWeek = (Button) findViewById(R.id.btnWeek);
+
         popupMenu = new PopupMenu(this, btnAddaCity);
         popupMenu.getMenu().add(1, 1, 1, getString(R.string.popup_item_show_on_map));
         popupMenu.getMenu().add(1, 2, 1, getString(R.string.popup_item_enter_manually));
@@ -147,12 +159,36 @@ public class MainActivity extends AppCompatActivity {
                 return false;
             }
         });
+
+        btnThree.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                processExtendedWeather(v);
+            }
+        });
+
+        btnWeek.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                processExtendedWeather(v);
+            }
+        });
     }
 
     private void processNewCity(City city) {
-        CityInt cityInt = dbHelper.getCityInt(city);
-        getWeatherTask = new AsyncTaskAccumulator.GetWeatherTask(this, cityInt, Consts.DAYS);
-        getWeatherTask.execute((Void)null);
+        choosenCity = city;
+        ApiWeather weather = loadFromCache(city);
+        if (weather != null) {
+            setWeather(weather);
+        } else {
+            CityInt cityInt = dbHelper.getCityInt(city);
+            getWeatherTask = new AsyncTaskAccumulator.GetWeatherTask(this, city, cityInt, Consts.DAYS);
+            getWeatherTask.execute((Void) null);
+        }
+    }
+
+    private ApiWeather loadFromCache(City city) {
+        return Cache.WeatherCacheDictionary.get(city.getName() + city.getCountry());
     }
 
     private void processPopupItemClick(int id) {
@@ -161,6 +197,13 @@ public class MainActivity extends AppCompatActivity {
         } else {
             enterCityNameManually();
         }
+    }
+
+    private void processExtendedWeather(View view) {
+        int count = view == btnThree ? 3 : 7;
+        ArrayList<ExtendedWeatherItem> extendedWeatherList = dbHelper.getExtendedWeatherList(choosenCity, count);
+        ExtendedWeatherListAdapter adapt = new ExtendedWeatherListAdapter(this, extendedWeatherList);
+        lvExtendedWeather.setAdapter(adapt);
     }
 
     private void showCityOnMap() {
@@ -219,7 +262,7 @@ public class MainActivity extends AppCompatActivity {
 
     public void setWeather(ApiWeather weather) {
         try {
-           String city = weather.getCity().getName();
+            String city = weather.getCity().getName();
             tvCity.setText(city);
             ApiDay day = weather.getList().get(0);
             long dateTime = day.getDt() * 1000;
@@ -236,6 +279,7 @@ public class MainActivity extends AppCompatActivity {
             df = new DecimalFormat("#.00");
             tvWind.setText(df.format(day.getSpeed()));
             tvCloudy.setText(String.valueOf(day.getClouds()));
+            fillCityListView();
         } catch (NullPointerException e) {
             e.printStackTrace();
         }

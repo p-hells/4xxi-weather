@@ -7,11 +7,18 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 
 import com.example.home.fourxxiweather.consts.DBPrefs;
+import com.example.home.fourxxiweather.models.ApiDay;
+import com.example.home.fourxxiweather.models.ApiWeather;
 import com.example.home.fourxxiweather.models.City;
 import com.example.home.fourxxiweather.models.CityInt;
 import com.example.home.fourxxiweather.models.CityListItem;
+import com.example.home.fourxxiweather.models.ExtendedWeatherItem;
 
+import java.text.DateFormat;
+import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
 
 public class DBHelper extends SQLiteOpenHelper {
 
@@ -30,6 +37,13 @@ public class DBHelper extends SQLiteOpenHelper {
                 + DBPrefs.COL_CITY_NAME_INT + " text,"
                 + DBPrefs.COL_COUNTRY + " text,"
                 + DBPrefs.COL_COUNTRY_CODE + " text" + ");");
+        db.execSQL("create table " + DBPrefs.TABLE_EXTENDED_WEATHER + " ("
+                + DBPrefs.COL_ID + " integer primary key autoincrement,"
+                + DBPrefs.COL_CITY_NAME + " text,"
+                + DBPrefs.COL_COUNTRY + " text,"
+                + DBPrefs.COL_DATE + " text,"
+                + DBPrefs.COL_WEATHER + " text,"
+                + DBPrefs.COL_TEMPERATURE + " text" + ");");
     }
 
     @Override
@@ -59,6 +73,7 @@ public class DBHelper extends SQLiteOpenHelper {
 
     public ArrayList<CityListItem> getCitiesList() {
         ArrayList<CityListItem> result = new ArrayList<>();
+        ArrayList<City> cities = new ArrayList<>();
         SQLiteDatabase db = this.getWritableDatabase();
         String[] columns = new String[]{DBPrefs.COL_CITY_NAME, DBPrefs.COL_COUNTRY};
         Cursor cursor = db.query(DBPrefs.TABLE_TRACKED_CITIES, columns, null, null, null, null, null);
@@ -68,7 +83,7 @@ public class DBHelper extends SQLiteOpenHelper {
             while (!exit) {
                 String city = cursor.getString(cursor.getColumnIndex(columns[0]));
                 String country = cursor.getString(cursor.getColumnIndex(columns[1]));
-                result.add(new CityListItem(city, country, "?", 0));
+                cities.add(new City(city, country));
                 if (!cursor.isLast()) {
                     cursor.moveToNext();
                 } else {
@@ -76,6 +91,26 @@ public class DBHelper extends SQLiteOpenHelper {
                 }
             }
         }
+        for (int i = 0; i < cities.size(); i++) {
+            String city = cities.get(i).getName();
+            String country = cities.get(i).getCountry();
+            DateFormat dateFormat = android.text.format.DateFormat.getDateFormat(context.getApplicationContext());
+            String date = dateFormat.format(System.currentTimeMillis());
+            String selection = DBPrefs.COL_CITY_NAME + " = ?" + " and " + DBPrefs.COL_COUNTRY +
+                    " = ?" + " and " + DBPrefs.COL_DATE + " = ?";
+            String[] selectionArgs = new String[]{city, country, date};
+            cursor = db.query(DBPrefs.TABLE_EXTENDED_WEATHER, null, selection, selectionArgs, null, null, null);
+            if (cursor.getCount() != 0) {
+                cursor.moveToFirst();
+                String temperature = cursor.getString(cursor.getColumnIndex(DBPrefs.COL_TEMPERATURE));
+                String weather = cursor.getString(cursor.getColumnIndex(DBPrefs.COL_WEATHER));
+                result.add(new CityListItem(city, country, temperature, 0));
+            } else {
+                result.add(new CityListItem(city, country, "?", 0));
+            }
+            cursor.close();
+        }
+        this.close();
         return result;
     }
 
@@ -96,6 +131,81 @@ public class DBHelper extends SQLiteOpenHelper {
         cursor.close();
         this.close();
         return new CityInt(name, countryCode);
+    }
+
+    public void fillWeatherTable(ApiWeather weather, City city) {
+        String name = city.getName();
+        String country = city.getCountry();
+        SQLiteDatabase db = this.getWritableDatabase();
+        List<ApiDay> days = weather.getList();
+        for (int i = 0; i < days.size(); i++) {
+            ApiDay day = days.get(i);
+            long dateTime = day.getDt() * 1000;
+            DateFormat dateFormat = android.text.format.DateFormat.getDateFormat(context.getApplicationContext());
+            String date = (dateFormat.format(dateTime));
+            String selection = DBPrefs.COL_CITY_NAME + " = ?" + " and " + DBPrefs.COL_COUNTRY +
+                    " = ?" + " and " + DBPrefs.COL_DATE + " = ?";
+            String[] selectionArgs = new String[]{name, country, date};
+            Cursor cursor = db.query(DBPrefs.TABLE_EXTENDED_WEATHER, null, selection, selectionArgs, null, null, null);
+            if (cursor.getCount() != 0) {
+                cursor.moveToFirst();
+                int id = cursor.getInt(cursor.getColumnIndex(DBPrefs.COL_ID));
+                db.delete(DBPrefs.TABLE_EXTENDED_WEATHER, "id = " + id, null);
+            }
+            String weatherDescription = day.getWeather().get(0).getWeather();
+            String temperature = CommonMethods.getTemperatureString(day.getTemp().getTemperature());
+            ContentValues cv = new ContentValues();
+            cv.put(DBPrefs.COL_CITY_NAME, name);
+            cv.put(DBPrefs.COL_COUNTRY, country);
+            cv.put(DBPrefs.COL_DATE, date);
+            cv.put(DBPrefs.COL_WEATHER, weatherDescription);
+            cv.put(DBPrefs.COL_TEMPERATURE, temperature);
+            db.insert(DBPrefs.TABLE_EXTENDED_WEATHER, null, cv);
+        }
+    }
+
+    public ArrayList<ExtendedWeatherItem> getExtendedWeatherList(City city, int dayCount) {
+        ArrayList<ExtendedWeatherItem> result = new ArrayList<>();
+        String cityName = city.getName();
+        String country = city.getCountry();
+        SQLiteDatabase db = this.getWritableDatabase();
+        String selection = DBPrefs.COL_CITY_NAME + " = ?" + " and " + DBPrefs.COL_COUNTRY + " = ?";
+        String[] selectionArgs = new String[]{cityName, country};
+        Cursor cursor = db.query(DBPrefs.TABLE_EXTENDED_WEATHER, null, selection, selectionArgs, null, null, null);
+        if (cursor.getCount() != 0) {
+            cursor.moveToFirst();
+            boolean exit = false;
+            boolean success = false;
+            DateFormat dateFormat = android.text.format.DateFormat.getDateFormat(context.getApplicationContext());
+            int i = 0;
+            long currentDate = System.currentTimeMillis();
+            while (!(exit || success)) {
+                String dateString = cursor.getString(cursor.getColumnIndex(DBPrefs.COL_DATE));
+                Date date = null;
+                try {
+                    date = dateFormat.parse(dateString);
+                } catch (ParseException e) {
+                    e.printStackTrace();
+                }
+                if (date != null && date.getTime() > currentDate) {
+                    i++;
+                    currentDate = date.getTime();
+                    String dayOfWeek = CommonMethods.getDayOfWeek(context, date);
+                    String temperature = cursor.getString(cursor.getColumnIndex(DBPrefs.COL_TEMPERATURE));
+                    String weather = cursor.getString(cursor.getColumnIndex(DBPrefs.COL_WEATHER));
+                    result.add(new ExtendedWeatherItem(dateString, dayOfWeek, temperature, 0));
+                }
+                success = i >= dayCount;
+                if (!cursor.isLast()) {
+                    cursor.moveToNext();
+                } else {
+                    exit = true;
+                }
+            }
+        }
+        cursor.close();
+        this.close();
+        return result;
     }
 
 }
