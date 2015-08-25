@@ -12,6 +12,7 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.ListView;
+import android.widget.PopupMenu;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -19,6 +20,7 @@ import com.example.home.fourxxiweather.R;
 import com.example.home.fourxxiweather.adapters.CityListAdapter;
 import com.example.home.fourxxiweather.consts.RequestCodes;
 import com.example.home.fourxxiweather.models.CityListItem;
+import com.example.home.fourxxiweather.utils.CommonMethods;
 import com.google.android.gms.common.GooglePlayServicesNotAvailableException;
 import com.google.android.gms.common.GooglePlayServicesRepairableException;
 import com.google.android.gms.location.places.Place;
@@ -34,12 +36,15 @@ import java.util.Locale;
 public class MainActivity extends AppCompatActivity {
 
     ArrayList<CityListItem> cities;
+    boolean firstStartCheck;
 
     //UI references
     ListView lvCities;
     TextView tvCity;
     TextView tvTemperature;
     Button btnAddaCity;
+    PopupMenu popupMenu;
+
 
     private final int LOWER_BOUND_LATITUDE = 45;
     private final int LOWER_BOUND_LONGITUDE = 10;
@@ -51,30 +56,36 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         cities = new ArrayList<>();
+        firstStartCheck = true;
         lvCities = (ListView) findViewById(R.id.lvCities);
         tvCity = (TextView) findViewById(R.id.tvCity);
         tvTemperature = (TextView) findViewById(R.id.tvTemperature);
         btnAddaCity = (Button) findViewById(R.id.btnAddCity);
+        popupMenu = new PopupMenu(this, btnAddaCity);
+        popupMenu.getMenu().add(1, 1, 1, getString(R.string.popup_item_show_on_map));
+        popupMenu.getMenu().add(1, 2, 1, getString(R.string.popup_item_enter_manually));
         setEvents();
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        cities.add(new CityListItem(getString(R.string.city_Moscow),
-                getString(R.string.country_Russia), "+ 20 C", 0));
-        cities.add(new CityListItem(getString(R.string.city_St_Petersburg),
-                getString(R.string.country_Russia), "+ 25 C", 0));
-
+        if (firstStartCheck) {
+            firstStartCheck = false;
+            cities.add(new CityListItem(getString(R.string.city_Moscow),
+                    getString(R.string.country_Russia), "+ 20 C", 0));
+            cities.add(new CityListItem(getString(R.string.city_St_Petersburg),
+                    getString(R.string.country_Russia), "+ 25 C", 0));
+        }
         fillCityListView();
     }
 
-    private void fillCityListView(){
+    private void fillCityListView() {
         CityListAdapter adapter = new CityListAdapter(this, cities);
         lvCities.setAdapter(adapter);
     }
 
-    private void setEvents(){
+    private void setEvents() {
         lvCities.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
@@ -86,7 +97,14 @@ public class MainActivity extends AppCompatActivity {
         btnAddaCity.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                showCityOnMap();
+                popupMenu.show();
+            }
+        });
+        popupMenu.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
+            @Override
+            public boolean onMenuItemClick(MenuItem item) {
+                processPopupItemClick(item.getItemId());
+                return false;
             }
         });
     }
@@ -94,6 +112,14 @@ public class MainActivity extends AppCompatActivity {
     private void processNewCity(String city, String temperature) {
         tvCity.setText(city);
         tvTemperature.setText(temperature);
+    }
+
+    private void processPopupItemClick(int id) {
+        if (id == 1) {
+            showCityOnMap();
+        } else {
+            enterCityNameManually();
+        }
     }
 
     private void showCityOnMap() {
@@ -108,40 +134,47 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    private void enterCityNameManually() {
+        Intent intent = new Intent(this, CityFinderActivity.class);
+        startActivityForResult(intent, RequestCodes.CITY_FINDER_REQUEST);
+    }
+
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == RequestCodes.PLACE_PICKER_REQUEST && resultCode == RESULT_OK) {
-            Place place = PlacePicker.getPlace(data, this);
-            Address address = getAddress(this, place, null);
-            if (address != null && address.getLocality() != null && address.getCountryName() != null) {
-                String city = address.getLocality();
-                String country = address.getCountryName();
-                cities.add(new CityListItem(city, country, "?", 0));
+        if (resultCode == RESULT_OK) {
+            String cityName = null;
+            String country = null;
+            String cityNameInt = null;
+            String countryCode = null;
+            if (requestCode == RequestCodes.PLACE_PICKER_REQUEST) {
+                Place place = PlacePicker.getPlace(data, this);
+                Address address = CommonMethods.getAddress(this, place, null);
+                Address addressInt = CommonMethods.getAddress(this, place, Locale.ENGLISH);
+                if (address != null && address.getLocality() != null && address.getCountryName() != null &&
+                        address.getCountryCode() != null && addressInt != null && addressInt.getLocality() != null) {
+                    cityName = address.getLocality();
+                    country = address.getCountryName();
+                    cityNameInt = addressInt.getLocality();
+                    countryCode = address.getCountryCode();
+                }
+            } else if (requestCode == RequestCodes.CITY_FINDER_REQUEST) {
+                cityName = data.getStringExtra("City");
+                country = data.getStringExtra("Country");
+                cityNameInt = data.getStringExtra("CityInt");
+                countryCode = data.getStringExtra("CountryCode");
+            }
+            if (cityName != null) {
                 String toastMsg = String.format(getString(R.string.txt_choosen_place) + " %s, %s",
-                        city, country);
+                        cityName, country);
                 Toast.makeText(this, toastMsg, Toast.LENGTH_LONG).show();
+                cities.add(new CityListItem(cityName, country, "?", 0));
                 fillCityListView();
             } else {
                 Toast.makeText(this, getString(R.string.txt_empty_place), Toast.LENGTH_LONG).show();
             }
         }
     }
-
-    public static Address getAddress(Context context, Place place, Locale locale) {
-        Address result = null;
-        Geocoder geocoder = locale == null ? new Geocoder(context) : new Geocoder(context, locale);
-        try {
-            List<Address> adresses = geocoder.getFromLocation(place.getLatLng().latitude, place.getLatLng().longitude, 1);
-            if (adresses != null && !adresses.isEmpty()) {
-                result = adresses.get(0);
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return result;
-    }
-
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {

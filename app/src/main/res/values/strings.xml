@@ -9,5 +9,12 @@
 
     <string name="txt_choosen_place">Выбрано:</string>
     <string name="txt_empty_place">Страна или населенный пункт не идентифицированы.</string>
+    <string name="txt_example_city_name">например, Лондон</string>
+    <string name="txt_not_connected">Нет соединения</string>
+
+    <string name="textview_find_city">Введите название населенного пункта и выберете подходящий вариант из списка</string>
+
+    <string name="popup_item_show_on_map">Показать на карте</string>
+    <string name="popup_item_enter_manually">Ввести название</string>
 
 </resources>
