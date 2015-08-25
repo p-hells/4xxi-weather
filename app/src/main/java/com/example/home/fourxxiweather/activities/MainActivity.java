@@ -17,6 +17,7 @@ import android.widget.Toast;
 
 import com.example.home.fourxxiweather.R;
 import com.example.home.fourxxiweather.adapters.CityListAdapter;
+import com.example.home.fourxxiweather.consts.RequestCodes;
 import com.example.home.fourxxiweather.models.CityListItem;
 import com.google.android.gms.common.GooglePlayServicesNotAvailableException;
 import com.google.android.gms.common.GooglePlayServicesRepairableException;
@@ -45,24 +46,35 @@ public class MainActivity extends AppCompatActivity {
     private final int UPPER_BOUND_LATITUDE = 55;
     private final int UPPER_BOUND_LONGITUDE = 20;
 
-    public static final int PLACE_PICKER_REQUEST = 1;
-
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
         cities = new ArrayList<>();
+        lvCities = (ListView) findViewById(R.id.lvCities);
+        tvCity = (TextView) findViewById(R.id.tvCity);
+        tvTemperature = (TextView) findViewById(R.id.tvTemperature);
+        btnAddaCity = (Button) findViewById(R.id.btnAddCity);
+        setEvents();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
         cities.add(new CityListItem(getString(R.string.city_Moscow),
                 getString(R.string.country_Russia), "+ 20 C", 0));
         cities.add(new CityListItem(getString(R.string.city_St_Petersburg),
                 getString(R.string.country_Russia), "+ 25 C", 0));
 
-        lvCities = (ListView) findViewById(R.id.lvCities);
-        tvCity = (TextView) findViewById(R.id.tvCity);
-        tvTemperature = (TextView) findViewById(R.id.tvTemperature);
-        btnAddaCity = (Button) findViewById(R.id.btnAddCity);
+        fillCityListView();
+    }
+
+    private void fillCityListView(){
+        CityListAdapter adapter = new CityListAdapter(this, cities);
+        lvCities.setAdapter(adapter);
+    }
+
+    private void setEvents(){
         lvCities.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
@@ -79,13 +91,6 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    @Override
-    protected void onResume() {
-        super.onResume();
-        CityListAdapter adapter = new CityListAdapter(this, cities);
-        lvCities.setAdapter(adapter);
-    }
-
     private void processNewCity(String city, String temperature) {
         tvCity.setText(city);
         tvTemperature.setText(temperature);
@@ -97,7 +102,7 @@ public class MainActivity extends AppCompatActivity {
                 new LatLng(UPPER_BOUND_LATITUDE, UPPER_BOUND_LONGITUDE)));
         Context context = getApplicationContext();
         try {
-            startActivityForResult(builder.build(context), PLACE_PICKER_REQUEST);
+            startActivityForResult(builder.build(context), RequestCodes.PLACE_PICKER_REQUEST);
         } catch (GooglePlayServicesNotAvailableException | GooglePlayServicesRepairableException e) {
             e.printStackTrace();
         }
@@ -106,18 +111,17 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == PLACE_PICKER_REQUEST && resultCode == RESULT_OK) {
+        if (requestCode == RequestCodes.PLACE_PICKER_REQUEST && resultCode == RESULT_OK) {
             Place place = PlacePicker.getPlace(data, this);
             Address address = getAddress(this, place, null);
             if (address != null && address.getLocality() != null && address.getCountryName() != null) {
                 String city = address.getLocality();
                 String country = address.getCountryName();
                 cities.add(new CityListItem(city, country, "?", 0));
-                CityListAdapter adapter = new CityListAdapter(this, cities);
-                lvCities.setAdapter(adapter);
                 String toastMsg = String.format(getString(R.string.txt_choosen_place) + " %s, %s",
                         city, country);
                 Toast.makeText(this, toastMsg, Toast.LENGTH_LONG).show();
+                fillCityListView();
             } else {
                 Toast.makeText(this, getString(R.string.txt_empty_place), Toast.LENGTH_LONG).show();
             }
