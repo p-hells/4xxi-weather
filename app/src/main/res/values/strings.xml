@@ -3,9 +3,12 @@
     <string name="action_settings">Settings</string>
 
     <string name="city_Moscow">Москва</string>
+    <string name="city_Moscow_int">Moscow</string>
     <string name="city_St_Petersburg">Санкт-Петербург</string>
+    <string name="city_St_Petersburg_int">Saint Petersburg</string>
 
     <string name="country_Russia">Россия</string>
+    <string name="country_Russia_code">RU</string>
 
     <string name="txt_choosen_place">Выбрано:</string>
     <string name="txt_empty_place">Страна или населенный пункт не идентифицированы.</string>

@@ -19,8 +19,11 @@ import android.widget.Toast;
 import com.example.home.fourxxiweather.R;
 import com.example.home.fourxxiweather.adapters.CityListAdapter;
 import com.example.home.fourxxiweather.consts.RequestCodes;
+import com.example.home.fourxxiweather.models.City;
+import com.example.home.fourxxiweather.models.CityInt;
 import com.example.home.fourxxiweather.models.CityListItem;
 import com.example.home.fourxxiweather.utils.CommonMethods;
+import com.example.home.fourxxiweather.utils.DBHelper;
 import com.google.android.gms.common.GooglePlayServicesNotAvailableException;
 import com.google.android.gms.common.GooglePlayServicesRepairableException;
 import com.google.android.gms.location.places.Place;
@@ -35,7 +38,7 @@ import java.util.Locale;
 
 public class MainActivity extends AppCompatActivity {
 
-    ArrayList<CityListItem> cities;
+    DBHelper dbHelper;
     boolean firstStartCheck;
 
     //UI references
@@ -55,7 +58,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        cities = new ArrayList<>();
+        dbHelper = new DBHelper(this);
         firstStartCheck = true;
         lvCities = (ListView) findViewById(R.id.lvCities);
         tvCity = (TextView) findViewById(R.id.tvCity);
@@ -72,15 +75,16 @@ public class MainActivity extends AppCompatActivity {
         super.onResume();
         if (firstStartCheck) {
             firstStartCheck = false;
-            cities.add(new CityListItem(getString(R.string.city_Moscow),
-                    getString(R.string.country_Russia), "+ 20 C", 0));
-            cities.add(new CityListItem(getString(R.string.city_St_Petersburg),
-                    getString(R.string.country_Russia), "+ 25 C", 0));
+            dbHelper.addRecordToCityTable(new City(getString(R.string.city_Moscow), getString(R.string.country_Russia)),
+                    new CityInt(getString(R.string.city_Moscow_int), getString(R.string.country_Russia_code)));
+            dbHelper.addRecordToCityTable(new City(getString(R.string.city_St_Petersburg), getString(R.string.country_Russia)),
+                    new CityInt(getString(R.string.city_St_Petersburg_int), getString(R.string.country_Russia_code)));
         }
         fillCityListView();
     }
 
     private void fillCityListView() {
+        ArrayList<CityListItem> cities = dbHelper.getCitiesList();
         CityListAdapter adapter = new CityListAdapter(this, cities);
         lvCities.setAdapter(adapter);
     }
@@ -168,7 +172,7 @@ public class MainActivity extends AppCompatActivity {
                 String toastMsg = String.format(getString(R.string.txt_choosen_place) + " %s, %s",
                         cityName, country);
                 Toast.makeText(this, toastMsg, Toast.LENGTH_LONG).show();
-                cities.add(new CityListItem(cityName, country, "?", 0));
+                dbHelper.addRecordToCityTable(new City(cityName, country), new CityInt(cityNameInt, countryCode));
                 fillCityListView();
             } else {
                 Toast.makeText(this, getString(R.string.txt_empty_place), Toast.LENGTH_LONG).show();
