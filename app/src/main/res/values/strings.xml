@@ -1,6 +1,10 @@
 <resources>
     <string name="app_name">4xxiWeather</string>
-
-    <string name="hello_world">Hello world!</string>
     <string name="action_settings">Settings</string>
+
+    <string name="city_Moscow">Москва</string>
+    <string name="city_St_Petersburg">Санкт-Петербург</string>
+
+    <string name="country_Russia">Россия</string>
+
 </resources>
