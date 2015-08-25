@@ -18,10 +18,15 @@ import android.widget.Toast;
 
 import com.example.home.fourxxiweather.R;
 import com.example.home.fourxxiweather.adapters.CityListAdapter;
+import com.example.home.fourxxiweather.consts.Consts;
 import com.example.home.fourxxiweather.consts.RequestCodes;
+import com.example.home.fourxxiweather.models.ApiDay;
+import com.example.home.fourxxiweather.models.ApiWeather;
+import com.example.home.fourxxiweather.models.ApiWeatherDescriptor;
 import com.example.home.fourxxiweather.models.City;
 import com.example.home.fourxxiweather.models.CityInt;
 import com.example.home.fourxxiweather.models.CityListItem;
+import com.example.home.fourxxiweather.utils.AsyncTaskAccumulator;
 import com.example.home.fourxxiweather.utils.CommonMethods;
 import com.example.home.fourxxiweather.utils.DBHelper;
 import com.google.android.gms.common.GooglePlayServicesNotAvailableException;
@@ -32,7 +37,10 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
 
 import java.io.IOException;
+import java.text.DecimalFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
@@ -40,11 +48,20 @@ public class MainActivity extends AppCompatActivity {
 
     DBHelper dbHelper;
     boolean firstStartCheck;
+    private AsyncTaskAccumulator.GetWeatherTask getWeatherTask;
+
 
     //UI references
     ListView lvCities;
     TextView tvCity;
     TextView tvTemperature;
+    TextView tvDate;
+    TextView tvDayOfWeek;
+    TextView tvWeather;
+    TextView tvWind;
+    TextView tvPressure;
+    TextView tvCloudy;
+    TextView tvHumidity;
     Button btnAddaCity;
     PopupMenu popupMenu;
 
@@ -63,11 +80,30 @@ public class MainActivity extends AppCompatActivity {
         lvCities = (ListView) findViewById(R.id.lvCities);
         tvCity = (TextView) findViewById(R.id.tvCity);
         tvTemperature = (TextView) findViewById(R.id.tvTemperature);
+        tvDate = (TextView) findViewById(R.id.tvDate);
+        tvDayOfWeek = (TextView) findViewById(R.id.tvDayOfWeek);
+        tvWeather = (TextView) findViewById(R.id.tvWeather);
+        tvWind = (TextView) findViewById(R.id.tvWind);
+        tvHumidity = (TextView) findViewById(R.id.tvHumidity);
+        tvPressure = (TextView) findViewById(R.id.tvPressure);
+        tvCloudy = (TextView) findViewById(R.id.tvCloudy);
         btnAddaCity = (Button) findViewById(R.id.btnAddCity);
         popupMenu = new PopupMenu(this, btnAddaCity);
         popupMenu.getMenu().add(1, 1, 1, getString(R.string.popup_item_show_on_map));
         popupMenu.getMenu().add(1, 2, 1, getString(R.string.popup_item_enter_manually));
         setEvents();
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.menu_main, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        int id = item.getItemId();
+        return id == R.id.action_settings || super.onOptionsItemSelected(item);
     }
 
     @Override
@@ -94,7 +130,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 CityListItem item = (CityListItem) parent.getItemAtPosition(position);
-                processNewCity(item.getCity(), item.getTemperature());
+                processNewCity(new City(item.getCity(), item.getCountry()));
             }
         });
 
@@ -113,9 +149,10 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    private void processNewCity(String city, String temperature) {
-        tvCity.setText(city);
-        tvTemperature.setText(temperature);
+    private void processNewCity(City city) {
+        CityInt cityInt = dbHelper.getCityInt(city);
+        getWeatherTask = new AsyncTaskAccumulator.GetWeatherTask(this, cityInt, Consts.DAYS);
+        getWeatherTask.execute((Void)null);
     }
 
     private void processPopupItemClick(int id) {
@@ -180,23 +217,29 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu_main, menu);
-        return true;
+    public void setWeather(ApiWeather weather) {
+        try {
+           String city = weather.getCity().getName();
+            tvCity.setText(city);
+            ApiDay day = weather.getList().get(0);
+            long dateTime = day.getDt() * 1000;
+            SimpleDateFormat dateFormat = new SimpleDateFormat("dd.MM");
+            tvDate.setText(dateFormat.format(dateTime));
+            String dayOfTheWeek = CommonMethods.getDayOfWeek(this, new Date(dateTime));
+            tvDayOfWeek.setText(dayOfTheWeek);
+            tvTemperature.setText(CommonMethods.getTemperatureString(day.getTemp().getTemperature()));
+            ApiWeatherDescriptor descr = day.getWeather().get(0);
+            tvWeather.setText(CommonMethods.getWeatherRu(this, descr.getWeather()));
+            tvHumidity.setText(String.valueOf(day.getHumidity()));
+            DecimalFormat df = new DecimalFormat("#");
+            tvPressure.setText(df.format(day.getPressure()));
+            df = new DecimalFormat("#.00");
+            tvWind.setText(df.format(day.getSpeed()));
+            tvCloudy.setText(String.valueOf(day.getClouds()));
+        } catch (NullPointerException e) {
+            e.printStackTrace();
+        }
     }
 
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            return true;
-        }
-        return super.onOptionsItemSelected(item);
-    }
+
 }

@@ -79,4 +79,23 @@ public class DBHelper extends SQLiteOpenHelper {
         return result;
     }
 
+    public CityInt getCityInt(City city) {
+        String cityName = city.getName();
+        String country = city.getCountry();
+        String name = null;
+        String countryCode = null;
+        SQLiteDatabase db = this.getWritableDatabase();
+        String selection = DBPrefs.COL_CITY_NAME + " = ?" + " and " + DBPrefs.COL_COUNTRY + " = ?";
+        String[] selectionArgs = new String[]{cityName, country};
+        Cursor cursor = db.query(DBPrefs.TABLE_TRACKED_CITIES, null, selection, selectionArgs, null, null, null);
+        if (cursor.getCount() > 0) {
+            cursor.moveToFirst();
+            name = cursor.getString(cursor.getColumnIndex(DBPrefs.COL_CITY_NAME_INT));
+            countryCode = cursor.getString(cursor.getColumnIndex(DBPrefs.COL_COUNTRY_CODE));
+        }
+        cursor.close();
+        this.close();
+        return new CityInt(name, countryCode);
+    }
+
 }

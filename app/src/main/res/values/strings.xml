@@ -20,4 +20,33 @@
     <string name="popup_item_show_on_map">Показать на карте</string>
     <string name="popup_item_enter_manually">Ввести название</string>
 
+    <string name="week_monday_uppercase">ПН</string>
+    <string name="week_tuesday_uppercase">ВТ</string>
+    <string name="week_wednesday_uppercase">СР</string>
+    <string name="week_thursday_uppercase">ЧТ</string>
+    <string name="week_friday_uppercase">ПТ</string>
+    <string name="week_saturday_uppercase">СБ</string>
+    <string name="week_sunday_uppercase">ВС</string>
+
+    <string name="week_monday_lowercase">пн</string>
+    <string name="week_tuesday_lowercase">вт</string>
+    <string name="week_wednesday_lowercase">ср</string>
+    <string name="week_thursday_lowercase">чт</string>
+    <string name="week_friday_lowercase">пт</string>
+    <string name="week_saturday_lowercase">сб</string>
+    <string name="week_sunday_lowercase">вс</string>
+
+    <string name="weather_clear">Clear</string>
+    <string name="weather_clear_ru">Ясно</string>
+    <string name="weather_thunderstorm">Thunderstorm</string>
+    <string name="weather_thunderstorm_ru">Гроза</string>
+    <string name="weather_drizzle">Drizzle</string>
+    <string name="weather_drizzle_ru">Морось</string>
+    <string name="weather_rain">Rain</string>
+    <string name="weather_rain_ru">Дождь</string>
+    <string name="weather_snow">Snow</string>
+    <string name="weather_snow_ru">Снег</string>
+    <string name="weather_clouds">Clouds</string>
+    <string name="weather_clouds_ru">Облачно</string>
+
 </resources>
