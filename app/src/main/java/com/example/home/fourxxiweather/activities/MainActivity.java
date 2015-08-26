@@ -155,6 +155,8 @@ public class MainActivity extends AppCompatActivity {
             Intent intent = new Intent(this, IdLoaderActivity.class);
             startActivity(intent);
             return true;
+        } else if (id == R.id.action_search){
+            showCityOnMap();
         }
         return super.onOptionsItemSelected(item);
     }
@@ -183,6 +185,15 @@ public class MainActivity extends AppCompatActivity {
         cancelPrimaryTask();
         cancelSecondaryTasks();
         super.onStop();
+    }
+
+    @Override
+    public void onBackPressed() {
+        if (weatherShowState == WeatherShowState.Normal) {
+            super.onBackPressed();
+        } else {
+            processExtendedWeather(rlWeather);
+        }
     }
 
     private void fillCityListView() {
@@ -422,12 +433,14 @@ public class MainActivity extends AppCompatActivity {
 
     public void startSecondaryTasks() {
         if (SharedPreferencesHelper.getIdLoadingState(this) == 1) {
-            if (Cache.JsonList.size() != Consts.RU_CITIES_COUNT) {
-                extractJsonTask = new AsyncTaskAccumulator.ExtractJsonTask(this);
-                extractJsonTask.execute((Void) null);
+            if (extractJsonTask == null && fillRuCitiesIdsTask == null) {
+                if (Cache.JsonList.size() != Consts.RU_CITIES_COUNT) {
+                    extractJsonTask = new AsyncTaskAccumulator.ExtractJsonTask(this);
+                    extractJsonTask.execute((Void) null);
+                }
+                fillRuCitiesIdsTask = new AsyncTaskAccumulator.FillRuCitiesIdsTask(this);
+                fillRuCitiesIdsTask.execute((Void) null);
             }
-            fillRuCitiesIdsTask = new AsyncTaskAccumulator.FillRuCitiesIdsTask(this);
-            fillRuCitiesIdsTask.execute((Void) null);
         }
     }
 
