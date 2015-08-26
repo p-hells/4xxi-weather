@@ -5,6 +5,7 @@ import android.os.AsyncTask;
 
 import com.example.home.fourxxiweather.Cache;
 import com.example.home.fourxxiweather.activities.MainActivity;
+import com.example.home.fourxxiweather.activities.SplashScreenActivity;
 import com.example.home.fourxxiweather.models.ApiWeather;
 import com.example.home.fourxxiweather.models.City;
 import com.example.home.fourxxiweather.models.CityInt;
@@ -45,13 +46,44 @@ public class AsyncTaskAccumulator {
 
         @Override
         protected void onPostExecute(final Boolean success) {
-            if (success) {
-                ((MainActivity) context).setWeather(weather);
+            if (context instanceof MainActivity) {
+                if (success) {
+                    ((MainActivity) context).setWeather(weather);
+                } else {
+                    ((MainActivity) context).setNoData();
+                }
+            } else {
+                ((SplashScreenActivity) context).processResult();
             }
         }
 
         @Override
         protected void onCancelled() {
+        }
+    }
+
+    public static class EmptyTask extends AsyncTask<Void, Void, Boolean> {
+
+        Context context;
+
+        public EmptyTask(Context context) {
+            this.context = context;
+        }
+
+
+        @Override
+        protected Boolean doInBackground(Void... params) {
+            try {
+                Thread.sleep(3000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(final Boolean success) {
+            ((SplashScreenActivity) context).finish();
         }
     }
 

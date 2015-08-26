@@ -154,18 +154,18 @@ public class MainActivity extends AppCompatActivity {
         super.onResume();
         if (firstStartCheck) {
             firstStartCheck = false;
-            dbHelper.addRecordToCityTable(new City(getString(R.string.city_Moscow), getString(R.string.country_Russia)),
-                    new CityInt(getString(R.string.city_Moscow_int), getString(R.string.country_Russia_code)));
-            dbHelper.addRecordToCityTable(new City(getString(R.string.city_St_Petersburg), getString(R.string.country_Russia)),
-                    new CityInt(getString(R.string.city_St_Petersburg_int), getString(R.string.country_Russia_code)));
+            Intent intent = new Intent(this, SplashScreenActivity.class);
+            startActivity(intent);
+        } else {
             City city = SharedPreferencesHelper.getChoosenCity(this);
-            if (city.getName().equals("")) {
-                SharedPreferencesHelper.setChoosenCity(this, new City(getString(R.string.city_Moscow),
-                        getString(R.string.country_Russia)));
-            }
+            processNewCity(city);
         }
-        City city = SharedPreferencesHelper.getChoosenCity(this);
-        processNewCity(city);
+    }
+
+    @Override
+    protected void onStop() {
+        cancelAsyncTask();
+        super.onStop();
     }
 
     private void fillCityListView() {
@@ -376,9 +376,20 @@ public class MainActivity extends AppCompatActivity {
             fillCityListView();
             rlWeatherView.setVisibility(View.VISIBLE);
         } catch (NullPointerException e) {
-            pvWeatherLoading.setVisibility(View.GONE);
-            tvWeatherLoading.setText(getString(R.string.textview_no_data));
-            fillCityListView();
+            setNoData();
+        }
+    }
+
+    public void setNoData() {
+        pvWeatherLoading.setVisibility(View.GONE);
+        tvWeatherLoading.setText(getString(R.string.textview_no_data));
+        fillCityListView();
+    }
+
+    private void cancelAsyncTask() {
+        if (getWeatherTask != null) {
+            getWeatherTask.cancel(false);
+            getWeatherTask = null;
         }
     }
 
