@@ -38,6 +38,7 @@ import com.example.home.fourxxiweather.models.ExtendedWeatherItem;
 import com.example.home.fourxxiweather.utils.AsyncTaskAccumulator;
 import com.example.home.fourxxiweather.utils.CommonMethods;
 import com.example.home.fourxxiweather.utils.DBHelper;
+import com.example.home.fourxxiweather.utils.SharedPreferencesHelper;
 import com.google.android.gms.common.GooglePlayServicesNotAvailableException;
 import com.google.android.gms.common.GooglePlayServicesRepairableException;
 import com.google.android.gms.location.places.Place;
@@ -86,7 +87,6 @@ public class MainActivity extends AppCompatActivity {
     private DBHelper dbHelper;
     private boolean firstStartCheck;
     private WeatherShowState weatherShowState;
-    private City choosenCity;
 
     private AsyncTaskAccumulator.GetWeatherTask getWeatherTask;
 
@@ -158,8 +158,14 @@ public class MainActivity extends AppCompatActivity {
                     new CityInt(getString(R.string.city_Moscow_int), getString(R.string.country_Russia_code)));
             dbHelper.addRecordToCityTable(new City(getString(R.string.city_St_Petersburg), getString(R.string.country_Russia)),
                     new CityInt(getString(R.string.city_St_Petersburg_int), getString(R.string.country_Russia_code)));
+            City city = SharedPreferencesHelper.getChoosenCity(this);
+            if (city.getName().equals("")) {
+                SharedPreferencesHelper.setChoosenCity(this, new City(getString(R.string.city_Moscow),
+                        getString(R.string.country_Russia)));
+            }
         }
-        fillCityListView();
+        City city = SharedPreferencesHelper.getChoosenCity(this);
+        processNewCity(city);
     }
 
     private void fillCityListView() {
@@ -194,13 +200,17 @@ public class MainActivity extends AppCompatActivity {
                 processExtendedWeather(v);
             }
         });
+
+        final Context context = this;
         lvCities.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 CityListItem item = (CityListItem) parent.getItemAtPosition(position);
-                String city = item.getCity();
+                String cityName = item.getCity();
                 String country = item.getCountry();
-                processNewCity(new City(city, country));
+                City city = new City(cityName, country);
+                SharedPreferencesHelper.setChoosenCity(context, city);
+                processNewCity(city);
             }
         });
         fabWeek.setOnClickListener(new View.OnClickListener() {
@@ -212,8 +222,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void processNewCity(City city) {
-        choosenCity = city;
-        ApiWeather weather = loadFromCache(city);
+        ApiWeather weather = getWeather(city);
         if (weather != null) {
             setWeather(weather);
         } else {
@@ -221,9 +230,18 @@ public class MainActivity extends AppCompatActivity {
             pvWeatherLoading.setVisibility(View.VISIBLE);
             tvWeatherLoading.setText(getString(R.string.textview_loading));
             rlWeatherView.setVisibility(View.GONE);
+        }
+    }
+
+    private ApiWeather getWeather(City city) {
+        ApiWeather weather = loadFromCache(city);
+        if (weather != null) {
+            return weather;
+        } else {
             CityInt cityInt = dbHelper.getCityInt(city);
             getWeatherTask = new AsyncTaskAccumulator.GetWeatherTask(this, city, cityInt, Consts.DAYS);
             getWeatherTask.execute((Void) null);
+            return null;
         }
     }
 
@@ -272,6 +290,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void fillExtendedWeatherList() {
+        City choosenCity = SharedPreferencesHelper.getChoosenCity(this);
         int count = weatherShowState == WeatherShowState.Week ? 7 : 3;
         ArrayList<ExtendedWeatherItem> extendedWeatherList = dbHelper.getExtendedWeatherList(choosenCity, count);
         ExtendedWeatherListAdapter adapt = new ExtendedWeatherListAdapter(this, extendedWeatherList);
@@ -334,7 +353,8 @@ public class MainActivity extends AppCompatActivity {
 
     public void setWeather(ApiWeather weather) {
         try {
-            tvCity.setText(choosenCity.getName());
+            City city = SharedPreferencesHelper.getChoosenCity(this);
+            tvCity.setText(city.getName());
             ApiDay day = weather.getList().get(0);
             long dateTime = day.getDt() * 1000;
             SimpleDateFormat dateFormat = new SimpleDateFormat("dd.MM");
@@ -361,6 +381,5 @@ public class MainActivity extends AppCompatActivity {
             fillCityListView();
         }
     }
-
 
 }

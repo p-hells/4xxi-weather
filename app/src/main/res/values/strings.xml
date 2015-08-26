@@ -2,6 +2,10 @@
     <string name="app_name">4xxiWeather</string>
     <string name="action_settings">Settings</string>
 
+    <string name="pref_file_name">app_prefs</string>
+    <string name="pref_city_name">city_name</string>
+    <string name="pref_country_name">country_name</string>
+
     <string name="city_Moscow">Москва</string>
     <string name="city_Moscow_int">Moscow</string>
     <string name="city_St_Petersburg">Санкт-Петербург</string>
