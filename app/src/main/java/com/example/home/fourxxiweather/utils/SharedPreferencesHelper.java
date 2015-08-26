@@ -23,4 +23,33 @@ public class SharedPreferencesHelper {
         ed.commit();
     }
 
+    public static int getRuCitiesIdsCount(Context context) {
+        SharedPreferences sPref = context.getSharedPreferences(context.getString(R.string.pref_file_name), Context.MODE_PRIVATE);
+        return sPref.getInt(context.getString(R.string.pref_ru_cities_ids_count), 0);
+    }
+
+    public static void incrementRuCitiesIdsCount(Context context) {
+        SharedPreferences sPref = context.getSharedPreferences(context.getString(R.string.pref_file_name), Context.MODE_PRIVATE);
+        int count = sPref.getInt(context.getString(R.string.pref_ru_cities_ids_count), 0);
+        count++;
+        SharedPreferences.Editor ed = sPref.edit();
+        ed.putInt(context.getString(R.string.pref_ru_cities_ids_count), count);
+        ed.commit();
+    }
+
+    //0 - not requested
+    //1 - loading
+    //2 - fully loaded
+    public static int getIdLoadingState(Context context){
+        SharedPreferences sPref = context.getSharedPreferences(context.getString(R.string.pref_file_name), Context.MODE_PRIVATE);
+        return sPref.getInt(context.getString(R.string.pref_id_loading_state), 0);
+    }
+
+    public static void setIdLoadingState(Context context, int state) {
+        SharedPreferences sPref = context.getSharedPreferences(context.getString(R.string.pref_file_name), Context.MODE_PRIVATE);
+        SharedPreferences.Editor ed = sPref.edit();
+        ed.putInt(context.getString(R.string.pref_id_loading_state), state);
+        ed.commit();
+    }
+
 }

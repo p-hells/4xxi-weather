@@ -10,4 +10,7 @@ public interface OpenWeatherApi {
     @GET("/forecast/daily")
     ApiWeather GetWeatherByCityName(@Query("q") String cityName, @Query("cnt") String dCount);
 
+    @GET("/forecast/daily")
+    ApiWeather GetWeatherByCityId(@Query("id") String cityId, @Query("cnt") String dCount);
+
 }

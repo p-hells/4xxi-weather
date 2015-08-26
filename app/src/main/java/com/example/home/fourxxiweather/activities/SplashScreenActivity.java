@@ -48,7 +48,8 @@ public class SplashScreenActivity extends AppCompatActivity {
 
     private void loadData(City city){
         CityInt cityInt = dbHelper.getCityInt(city);
-        AsyncTaskAccumulator.GetWeatherTask getWeatherTask = new AsyncTaskAccumulator.GetWeatherTask(this, city, cityInt, Consts.DAYS);
+        String id = dbHelper.getCityId(cityInt);
+        AsyncTaskAccumulator.GetWeatherTask getWeatherTask = new AsyncTaskAccumulator.GetWeatherTask(this, city, cityInt, id, Consts.DAYS);
         getWeatherTask.execute((Void) null);
 
     }

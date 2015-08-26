@@ -62,6 +62,7 @@ public class MainActivity extends AppCompatActivity {
     RelativeLayout rlWeather;
     RelativeLayout rlCities;
     RelativeLayout rlWeatherView;
+    RelativeLayout rlIdsLoading;
     LinearLayout llExtendedWeather;
     ListView lvCities;
     ListView lvExtendedWeather;
@@ -79,6 +80,7 @@ public class MainActivity extends AppCompatActivity {
     TextView tvExtend;
     TextView tvWeatherLoading;
     ProgressView pvWeatherLoading;
+    ProgressView pvIdsLoading;
     FloatingActionButton fabWeek;
     FloatingActionButton fabAddCity;
     ImageView ivWeatherMain;
@@ -89,7 +91,8 @@ public class MainActivity extends AppCompatActivity {
     private WeatherShowState weatherShowState;
 
     private AsyncTaskAccumulator.GetWeatherTask getWeatherTask;
-
+    private AsyncTaskAccumulator.ExtractJsonTask extractJsonTask;
+    private AsyncTaskAccumulator.FillRuCitiesIdsTask fillRuCitiesIdsTask;
 
     private final int LOWER_BOUND_LATITUDE = 45;
     private final int LOWER_BOUND_LONGITUDE = 10;
@@ -109,6 +112,7 @@ public class MainActivity extends AppCompatActivity {
         llExtendedWeather = (LinearLayout) findViewById(R.id.llExtendedWeather);
         rlCities = (RelativeLayout) findViewById(R.id.rlCities);
         rlWeatherView = (RelativeLayout) findViewById(R.id.rlWeatherView);
+        rlIdsLoading = (RelativeLayout) findViewById(R.id.rlIdsLoading);
         lvCities = (ListView) findViewById(R.id.lvCities);
         lvExtendedWeather = (ListView) findViewById(R.id.lvExtendedWeather);
         tvCity = (TextView) findViewById(R.id.tvCity);
@@ -125,6 +129,7 @@ public class MainActivity extends AppCompatActivity {
         tvExtend = (TextView) findViewById(R.id.tvExtend);
         tvWeatherLoading = (TextView) findViewById(R.id.tvWeatherLoading);
         pvWeatherLoading = (ProgressView) findViewById(R.id.pvWeatherLoading);
+        pvIdsLoading = (ProgressView) findViewById(R.id.pvIdsLoading);
         fabWeek = (FloatingActionButton) findViewById(R.id.fabWeek);
         fabAddCity = (FloatingActionButton) findViewById(R.id.fabAddCity);
         ivWeatherMain = (ImageView) findViewById(R.id.ivWeatherMain);
@@ -146,7 +151,12 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
-        return id == R.id.action_settings || super.onOptionsItemSelected(item);
+        if (id == R.id.action_id_loader) {
+            Intent intent = new Intent(this, IdLoaderActivity.class);
+            startActivity(intent);
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
     }
 
     @Override
@@ -157,6 +167,12 @@ public class MainActivity extends AppCompatActivity {
             Intent intent = new Intent(this, SplashScreenActivity.class);
             startActivity(intent);
         } else {
+            if (SharedPreferencesHelper.getIdLoadingState(this) == 1) {
+                rlIdsLoading.setVisibility(View.VISIBLE);
+                setProgressViewValue(SharedPreferencesHelper.getRuCitiesIdsCount(this));
+            } else {
+                rlIdsLoading.setVisibility(View.GONE);
+            }
             City city = SharedPreferencesHelper.getChoosenCity(this);
             processNewCity(city);
         }
@@ -164,7 +180,8 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onStop() {
-        cancelAsyncTask();
+        cancelPrimaryTask();
+        cancelSecondaryTasks();
         super.onStop();
     }
 
@@ -239,8 +256,8 @@ public class MainActivity extends AppCompatActivity {
             return weather;
         } else {
             CityInt cityInt = dbHelper.getCityInt(city);
-            getWeatherTask = new AsyncTaskAccumulator.GetWeatherTask(this, city, cityInt, Consts.DAYS);
-            getWeatherTask.execute((Void) null);
+            String id = dbHelper.getCityId(cityInt);
+            startPrimaryTask(city, cityInt, id);
             return null;
         }
     }
@@ -344,7 +361,7 @@ public class MainActivity extends AppCompatActivity {
                         cityName, country);
                 Toast.makeText(this, toastMsg, Toast.LENGTH_LONG).show();
                 dbHelper.addRecordToCityTable(new City(cityName, country), new CityInt(cityNameInt, countryCode));
-                fillCityListView();
+                SharedPreferencesHelper.setChoosenCity(this, new City(cityName, country));
             } else {
                 Toast.makeText(this, getString(R.string.txt_empty_place), Toast.LENGTH_LONG).show();
             }
@@ -375,6 +392,7 @@ public class MainActivity extends AppCompatActivity {
             tvClouds.setText(String.valueOf(day.getClouds()));
             fillCityListView();
             rlWeatherView.setVisibility(View.VISIBLE);
+            startSecondaryTasks();
         } catch (NullPointerException e) {
             setNoData();
         }
@@ -384,12 +402,50 @@ public class MainActivity extends AppCompatActivity {
         pvWeatherLoading.setVisibility(View.GONE);
         tvWeatherLoading.setText(getString(R.string.textview_no_data));
         fillCityListView();
+        startSecondaryTasks();
     }
 
-    private void cancelAsyncTask() {
+    public void setProgressViewValue(int count) {
+        if (count < Consts.RU_CITIES_COUNT) {
+            float progress = (float) count / Consts.RU_CITIES_COUNT;
+            pvIdsLoading.setProgress(progress);
+        } else {
+            rlIdsLoading.setVisibility(View.GONE);
+        }
+    }
+
+    private void startPrimaryTask(City city, CityInt cityInt, String id) {
+        cancelSecondaryTasks();
+        getWeatherTask = new AsyncTaskAccumulator.GetWeatherTask(this, city, cityInt, id, Consts.DAYS);
+        getWeatherTask.execute((Void) null);
+    }
+
+    public void startSecondaryTasks() {
+        if (SharedPreferencesHelper.getIdLoadingState(this) == 1) {
+            if (Cache.JsonList.size() != Consts.RU_CITIES_COUNT) {
+                extractJsonTask = new AsyncTaskAccumulator.ExtractJsonTask(this);
+                extractJsonTask.execute((Void) null);
+            }
+            fillRuCitiesIdsTask = new AsyncTaskAccumulator.FillRuCitiesIdsTask(this);
+            fillRuCitiesIdsTask.execute((Void) null);
+        }
+    }
+
+    private void cancelPrimaryTask() {
         if (getWeatherTask != null) {
             getWeatherTask.cancel(false);
             getWeatherTask = null;
+        }
+    }
+
+    private void cancelSecondaryTasks() {
+        if (extractJsonTask != null) {
+            extractJsonTask.cancel(true);
+            extractJsonTask = null;
+        }
+        if (fillRuCitiesIdsTask != null) {
+            fillRuCitiesIdsTask.cancel(true);
+            fillRuCitiesIdsTask = null;
         }
     }
 

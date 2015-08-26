@@ -9,6 +9,8 @@ public class DBPrefs {
     //tables' keys
     public static final String TABLE_TRACKED_CITIES = "trackedcities";
     public static final String TABLE_EXTENDED_WEATHER = "extendedweather";
+    public static final String TABLE_CITIES_ID = "citiesid";
+
 
 
     //columns' keys
@@ -20,5 +22,8 @@ public class DBPrefs {
     public static final String COL_DATE = "date";
     public static final String COL_WEATHER = "weather";
     public static final String COL_TEMPERATURE = "temperature";
+    public static final String COL_CITY_ID = "cityid";
+    public static final String COL_COORD = "coord";
+
 
 }

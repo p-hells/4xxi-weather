@@ -19,7 +19,7 @@
             android:layout_height="match_parent"
             android:layout_below="@+id/toolbar"
             android:layout_above="@+id/rlWeatherView"
-            android:id="@+id/rlIdsProgress"
+            android:id="@+id/rlProgress"
             android:background="@android:color/white">
 
             <RelativeLayout
@@ -67,6 +67,40 @@
         </RelativeLayout>
 
         <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="30dp"
+            android:id="@+id/rlIdsLoading"
+            android:layout_below="@+id/toolbar"
+            android:visibility="gone"
+            android:background="@color/indigo_50">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textAppearance="?android:attr/textAppearanceSmall"
+                android:text="@string/textview_ids_loading_progress"
+                android:id="@+id/textView5"
+                android:layout_alignParentStart="false"
+                android:layout_alignParentTop="true"
+                android:layout_marginTop="1dp"
+                android:layout_alignParentLeft="false"
+                android:layout_centerHorizontal="true" />
+
+            <com.rey.material.widget.ProgressView
+                android:layout_width="wrap_content"
+                android:layout_height="10dp"
+                app:pv_autostart="false"
+                app:pv_circular="false"
+                app:pv_progressStyle="@style/ProgressView1"
+                app:pv_progressMode="determinate"
+                android:id="@+id/pvIdsLoading"
+                android:layout_alignParentBottom="true"
+                android:layout_alignParentLeft="true"
+                android:layout_alignParentRight="true"
+                android:layout_marginBottom="2dp" />
+        </RelativeLayout>
+
+        <RelativeLayout
             android:id="@+id/rlWeatherView"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -75,7 +109,7 @@
             android:orientation="vertical"
             android:background="@android:color/white"
             android:layout_above="@+id/rlCities"
-            android:layout_below="@+id/toolbar"
+            android:layout_below="@+id/rlIdsLoading"
             android:visibility="visible">
 
             <RelativeLayout

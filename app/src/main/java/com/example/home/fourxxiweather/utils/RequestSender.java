@@ -17,11 +17,16 @@ public class RequestSender {
         this.context = context;
     }
 
-    public ApiWeather getWeather(String cityName, String count){
+    public ApiWeather getWeatherById(String cityId, String count){
+        restAdapter = OpenWeatherRestAdapter.getRestAdapter();
+        OpenWeatherApi api = restAdapter.create(OpenWeatherApi.class);
+        return api.GetWeatherByCityId(cityId, count);
+    }
+
+    public ApiWeather getWeatherByCity(String cityName, String count){
         restAdapter = OpenWeatherRestAdapter.getRestAdapter();
         OpenWeatherApi api = restAdapter.create(OpenWeatherApi.class);
         return api.GetWeatherByCityName(cityName, count);
     }
-
 
 }

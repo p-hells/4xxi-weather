@@ -44,6 +44,12 @@ public class DBHelper extends SQLiteOpenHelper {
                 + DBPrefs.COL_DATE + " text,"
                 + DBPrefs.COL_WEATHER + " text,"
                 + DBPrefs.COL_TEMPERATURE + " text" + ");");
+        db.execSQL("create table " + DBPrefs.TABLE_CITIES_ID + " ("
+                + DBPrefs.COL_ID + " integer primary key autoincrement,"
+                + DBPrefs.COL_CITY_ID + " text,"
+                + DBPrefs.COL_CITY_NAME_INT + " text,"
+                + DBPrefs.COL_COUNTRY_CODE + " text,"
+                + DBPrefs.COL_COORD + " text" + ");");
     }
 
     @Override
@@ -204,6 +210,23 @@ public class DBHelper extends SQLiteOpenHelper {
                     exit = true;
                 }
             }
+        }
+        cursor.close();
+        this.close();
+        return result;
+    }
+
+    public String getCityId(CityInt cityInt) {
+        String result = null;
+        String name = cityInt.getName();
+        String countryCode = cityInt.getCountryCode();
+        SQLiteDatabase db = this.getWritableDatabase();
+        String selection = DBPrefs.COL_CITY_NAME_INT + " = ?" + " and " + DBPrefs.COL_COUNTRY_CODE + " = ?";
+        String[] selectionArgs = new String[]{name, countryCode};
+        Cursor cursor = db.query(DBPrefs.TABLE_CITIES_ID, null, selection, selectionArgs, null, null, null);
+        if (cursor.getCount() > 0) {
+            cursor.moveToFirst();
+            result = cursor.getString(cursor.getColumnIndex(DBPrefs.COL_CITY_ID));
         }
         cursor.close();
         this.close();
