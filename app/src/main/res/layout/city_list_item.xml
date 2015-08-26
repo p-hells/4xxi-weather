@@ -7,21 +7,30 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textAppearance="?android:attr/textAppearanceMedium"
-        android:text="Москва"
+        android:text="@string/city_Moscow"
         android:id="@+id/tvCityItem"
         android:layout_alignParentTop="true"
         android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true" />
+        android:layout_alignParentStart="true"
+        android:textStyle="bold"
+        android:textSize="18dp"
+        android:layout_marginTop="5dp"
+        android:layout_marginLeft="5dp"
+        android:textColor="@android:color/white" />
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textAppearance="?android:attr/textAppearanceMedium"
-        android:text="Россия"
+        android:text="@string/country_Russia"
         android:id="@+id/tvCountryItem"
         android:layout_below="@+id/tvCityItem"
         android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true" />
+        android:layout_alignParentStart="true"
+        android:textSize="12dp"
+        android:layout_marginLeft="5dp"
+        android:layout_marginBottom="5dp"
+        android:textColor="@android:color/white" />
 
     <ImageView
         android:layout_width="wrap_content"
@@ -30,15 +39,29 @@
         android:layout_alignParentTop="true"
         android:layout_alignParentRight="true"
         android:layout_alignParentEnd="true"
-        android:src="@android:drawable/ic_menu_camera" />
+        android:src="@drawable/ic_cloud_white_24dp"
+        android:longClickable="true"
+        android:layout_marginTop="10dp"
+        android:layout_marginRight="5dp"
+        android:layout_marginLeft="5dp" />
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textAppearance="?android:attr/textAppearanceMedium"
-        android:text="+25 С"
+        android:text="+17"
         android:id="@+id/tvTemperatureItem"
-        android:layout_alignParentTop="true"
+        android:layout_alignTop="@+id/tvCityItem"
+        android:layout_toLeftOf="@+id/imageView9"
+        android:layout_toStartOf="@+id/ivWeatherPicItem"
+        android:textSize="20sp"
+        android:textColor="@android:color/white" />
+
+    <ImageView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/imageView9"
         android:layout_toLeftOf="@+id/ivWeatherPicItem"
-        android:layout_toStartOf="@+id/ivWeatherPicItem" />
+        android:src="@drawable/ic_temperature_celsius_white_18dp"
+        android:layout_alignTop="@+id/ivWeatherPicItem" />
 </RelativeLayout>

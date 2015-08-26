@@ -16,6 +16,9 @@
     <string name="txt_not_connected">Нет соединения</string>
 
     <string name="textview_find_city">Введите название населенного пункта и выберете подходящий вариант из списка</string>
+    <string name="textview_loading">Загрузка...</string>
+    <string name="textview_extended_weather">прогноз на предстоящие дни</string>
+    <string name="textview_no_data">Нет данных</string>
 
     <string name="popup_item_show_on_map">Показать на карте</string>
     <string name="popup_item_enter_manually">Ввести название</string>

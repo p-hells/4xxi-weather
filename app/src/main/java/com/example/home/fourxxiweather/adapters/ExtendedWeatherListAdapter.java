@@ -72,12 +72,12 @@ public class ExtendedWeatherListAdapter extends BaseAdapter {
         TextView tvDate = (TextView) layout.findViewById(R.id.tvDateItem);
         TextView tvDayOfWeek = (TextView) layout.findViewById(R.id.tvDayOfWeekItem);
         TextView tvTemperature = (TextView) layout.findViewById(R.id.tvTempItem);
-        ImageView ivWeather = (ImageView) layout.findViewById(R.id.ivExtendedWeatherItem);
+        ImageView ivWeather = (ImageView) layout.findViewById(R.id.ivExtendedWeatherPicItem);
 
         tvDate.setText(dateString);
         tvDayOfWeek.setText(dayOfWeek);
         tvTemperature.setText(temperature);
-       // ivWeather.setImageResource(item.getWeatherImageId());
+        ivWeather.setImageResource(item.getWeatherImageId());
 
         return layout;
     }

@@ -1,12 +1,32 @@
 <resources>
-
     <style name="AppTheme" parent="Theme.AppCompat.Light.NoActionBar">
-        <item name="colorPrimary">@color/light_blue_500</item>
-        <item name="colorPrimaryDark">@color/light_blue_900</item>
+        <item name="colorPrimary">@color/indigo_500</item>
+        <item name="colorPrimaryDark">@color/indigo_900</item>
     </style>
 
     <style name="AppTheme.NoActionBar">
         <item name="android:windowNoTitle">true</item>
         <item name="windowActionBar">false</item>
     </style>
+
+    <style name="FloatButton1">
+        <item name="fab_backgroundColor">@color/pink_A400</item>
+        <item name="fab_radius">25dp</item>
+        <item name="fab_iconSrc">@drawable/ic_plus_white_48dp</item>
+    </style>
+
+    <style name="FloatButton2">
+        <item name="fab_backgroundColor">@color/light_blue_A700</item>
+        <item name="fab_radius">25dp</item>
+        <item name="fab_iconSrc">@drawable/ic_numeric_7_box_outline_white_48dp</item>
+    </style>
+
+    <style name="ProgressView1">
+        <item name="cpd_strokeColor">@color/indigo_400</item>
+    </style>
+
+    <style name="ProgressView2">
+        <item name="cpd_strokeColor">@color/indigo_500</item>
+    </style>
+
 </resources>

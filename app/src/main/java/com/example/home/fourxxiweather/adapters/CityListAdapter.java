@@ -50,20 +50,19 @@ public class CityListAdapter extends BaseAdapter {
         }
         CityListItem item = (CityListItem) getItem(position);
 
-        TextView tvCityItem = (TextView) layout.findViewById(R.id.tvCityItem);
         String city = item.getCity();
-        tvCityItem.setText(city);
-
-        TextView tvCountryItem = (TextView) layout.findViewById(R.id.tvCountryItem);
         String country = item.getCountry();
-        tvCountryItem.setText(country);
-
-        TextView tvTemp = (TextView) layout.findViewById(R.id.tvTemperatureItem);
         String temp = item.getTemperature();
-        tvTemp.setText(temp);
 
+        TextView tvCityItem = (TextView) layout.findViewById(R.id.tvCityItem);
+        TextView tvCountryItem = (TextView) layout.findViewById(R.id.tvCountryItem);
+        TextView tvTemp = (TextView) layout.findViewById(R.id.tvTemperatureItem);
         ImageView ivWeather = (ImageView) layout.findViewById(R.id.ivWeatherPicItem);
-      //  ivWeather.setImageResource(item.getWeatherPicId());
+
+        tvCityItem.setText(city);
+        tvCountryItem.setText(country);
+        tvTemp.setText(temp);
+        ivWeather.setImageResource(item.getWeatherPicId());
 
         return layout;
     }

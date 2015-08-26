@@ -104,7 +104,8 @@ public class DBHelper extends SQLiteOpenHelper {
                 cursor.moveToFirst();
                 String temperature = cursor.getString(cursor.getColumnIndex(DBPrefs.COL_TEMPERATURE));
                 String weather = cursor.getString(cursor.getColumnIndex(DBPrefs.COL_WEATHER));
-                result.add(new CityListItem(city, country, temperature, 0));
+                int weatherpicId = CommonMethods.getSmallWhiteWeatherImageId(context, weather);
+                result.add(new CityListItem(city, country, temperature, weatherpicId));
             } else {
                 result.add(new CityListItem(city, country, "?", 0));
             }
@@ -193,7 +194,8 @@ public class DBHelper extends SQLiteOpenHelper {
                     String dayOfWeek = CommonMethods.getDayOfWeek(context, date);
                     String temperature = cursor.getString(cursor.getColumnIndex(DBPrefs.COL_TEMPERATURE));
                     String weather = cursor.getString(cursor.getColumnIndex(DBPrefs.COL_WEATHER));
-                    result.add(new ExtendedWeatherItem(dateString, dayOfWeek, temperature, 0));
+                    int weatherPicId = CommonMethods.getSmallGreyWeatherImageId(context, weather);
+                    result.add(new ExtendedWeatherItem(dateString, dayOfWeek, temperature, weatherPicId));
                 }
                 success = i >= dayCount;
                 if (!cursor.isLast()) {

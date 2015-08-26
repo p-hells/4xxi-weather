@@ -78,4 +78,58 @@ public class CommonMethods {
         return result;
     }
 
+    public static int getSmallWhiteWeatherImageId(Context context, String weather) {
+        int result = R.drawable.ic_cloud_white_24dp;
+        if (weather.equals(context.getString(R.string.weather_clear))) {
+            result =  R.drawable.ic_white_balance_sunny_white_24dp;
+        } else if (weather.equals(context.getString(R.string.weather_thunderstorm))) {
+            result =  R.drawable.ic_weather_lightning_white_24dp;
+        } else if (weather.equals(context.getString(R.string.weather_drizzle))) {
+            result =  R.drawable.ic_weather_pouring_white_24dp;
+        } else if (weather.equals(context.getString(R.string.weather_rain))) {
+            result =  R.drawable.ic_weather_pouring_white_24dp;
+        } else if (weather.equals(context.getString(R.string.weather_snow))) {
+            result =  R.drawable.ic_weather_snowy_white_24dp;
+        } else if (weather.equals(context.getString(R.string.weather_clouds))) {
+            result =  R.drawable.ic_cloud_white_24dp;
+        }
+        return result;
+    }
+
+    public static int getSmallGreyWeatherImageId(Context context, String weather) {
+        int result = R.drawable.ic_cloud_grey600_24dp;
+        if (weather.equals(context.getString(R.string.weather_clear))) {
+            result =  R.drawable.ic_white_balance_sunny_grey600_24dp;
+        } else if (weather.equals(context.getString(R.string.weather_thunderstorm))) {
+            result =  R.drawable.ic_weather_lightning_grey600_24dp;
+        } else if (weather.equals(context.getString(R.string.weather_drizzle))) {
+            result =  R.drawable.ic_weather_pouring_grey600_24dp;
+        } else if (weather.equals(context.getString(R.string.weather_rain))) {
+            result =  R.drawable.ic_weather_pouring_grey600_24dp;
+        } else if (weather.equals(context.getString(R.string.weather_snow))) {
+            result =  R.drawable.ic_weather_snowy_grey600_24dp;
+        } else if (weather.equals(context.getString(R.string.weather_clouds))) {
+            result =  R.drawable.ic_cloud_grey600_24dp;
+        }
+        return result;
+    }
+
+    public static int getBigWeatherImageId(Context context, String weather) {
+        int result = R.drawable.ic_cloud_grey_96dp;
+        if (weather.equals(context.getString(R.string.weather_clear))) {
+            result =  R.drawable.ic_white_balance_sunny_grey_96dp;
+        } else if (weather.equals(context.getString(R.string.weather_thunderstorm))) {
+            result =  R.drawable.ic_weather_lightning_grey_96dp;
+        } else if (weather.equals(context.getString(R.string.weather_drizzle))) {
+            result =  R.drawable.ic_weather_pouring_grey_96dp;
+        } else if (weather.equals(context.getString(R.string.weather_rain))) {
+            result =  R.drawable.ic_weather_pouring_grey_96dp;
+        } else if (weather.equals(context.getString(R.string.weather_snow))) {
+            result =  R.drawable.ic_weather_snowy_grey_96dp;
+        } else if (weather.equals(context.getString(R.string.weather_clouds))) {
+            result =  R.drawable.ic_cloud_grey_96dp;
+        }
+        return result;
+    }
+
 }

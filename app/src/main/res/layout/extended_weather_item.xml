@@ -26,7 +26,7 @@
     <ImageView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:id="@+id/ivExtendedWeatherItem"
+        android:id="@+id/ivExtendedWeatherPicItem"
         android:layout_alignParentTop="true"
         android:layout_alignParentRight="true"
         android:layout_alignParentEnd="true"
@@ -37,11 +37,20 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textAppearance="?android:attr/textAppearanceSmall"
-        android:text="+20 C"
+        android:text="+20"
         android:id="@+id/tvTempItem"
         android:layout_alignParentTop="false"
-        android:textStyle="bold"
-        android:layout_toLeftOf="@+id/ivExtendedWeatherItem"
-        android:layout_alignTop="@+id/ivExtendedWeatherItem" />
+        android:layout_toLeftOf="@+id/imageView"
+        android:layout_alignTop="@+id/imageView"
+        android:textStyle="bold" />
 
+    <ImageView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/imageView"
+        android:layout_toLeftOf="@+id/ivExtendedWeatherPicItem"
+        android:layout_toStartOf="@+id/ivExtendedWeatherPicItem"
+        android:src="@drawable/ic_temperature_celsius_grey600_18dp"
+        android:layout_alignTop="@+id/ivExtendedWeatherPicItem"
+        android:layout_marginRight="5dp" />
 </RelativeLayout>
